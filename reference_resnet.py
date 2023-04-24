@@ -1,7 +1,7 @@
 import  torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torchsummary as summary
+from torchsummary import summary
 
 class BN_Conv2d(nn.Module):
     """
@@ -47,7 +47,33 @@ class BasicBlock(nn.Module):
         out = out + self.short_cut(x)
         return F.relu(out)
     
+class BottleNeck(nn.Module):
+    """
+    BottleNeck block for RestNet-50, ResNet-101, ResNet-152
+    """
+    message = "bottleneck"
 
+    def __init__(self, in_channels, out_channels, strides):
+        super(BottleNeck, self).__init__()
+        self.conv1 = BN_Conv2d(in_channels, out_channels, 1, stride=1, padding=0, bias=False)  # same padding
+        self.conv2 = BN_Conv2d(out_channels, out_channels, 3, stride=strides, padding=1, bias=False)
+        self.conv3 = BN_Conv2d(out_channels, out_channels * 4, 1, stride=1, padding=0, bias=False, activation=False)
+        
+
+        # fit input with residual output
+        self.shortcut = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels * 4, 1, stride=strides, padding=0, bias=False),
+            nn.BatchNorm2d(out_channels * 4)
+        )
+
+    def forward(self, x):
+        out = self.conv1(x)
+        out = self.conv2(out)
+        out = self.conv3(out)
+
+        out = out + self.shortcut(x)
+        return F.relu(out)
+    
 class ResNet(nn.Module):
     """
     building ResNet_34
@@ -97,3 +123,29 @@ class ResNet(nn.Module):
         out = out.view(out.size(0), -1)
         out = F.softmax(self.fc(out))
         return out
+    
+def ResNet_18(num_classes=1000):
+    return ResNet(block=BasicBlock, groups=[2, 2, 2, 2], num_classes=num_classes)
+
+def ResNet_34(num_classes=1000):
+    return ResNet(block=BasicBlock, groups=[3, 4, 6, 3], num_classes=num_classes)
+
+def ResNet_50(num_classes=1000):
+    return ResNet(block=BottleNeck, groups=[3, 4, 6, 3], num_classes=num_classes)
+
+def ResNet_101(num_classes=1000):
+    return ResNet(block=BottleNeck, groups=[3, 4, 23, 3], num_classes=num_classes)
+
+def ResNet_152(num_classes=1000):
+    return ResNet(block=BottleNeck, groups=[3, 8, 36, 3], num_classes=num_classes)
+
+def test():
+    # net = ResNet_18()
+    # net = ResNet_34()
+    # net = ResNet_50()
+    # net = ResNet_101()
+    net = ResNet_152()
+    net = net.to("cuda")
+    summary(net, (3, 224, 224))
+
+test()
