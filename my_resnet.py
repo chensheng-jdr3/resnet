@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchsummary import summary
+from torch.utils.tensorboard import SummaryWriter
 
 class Layer_block(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride):
@@ -21,9 +22,9 @@ class Layer_block(nn.Module):
     
     
 
-class ResNet(nn.Module):
+class My_ResNet(nn.Module):
     def __init__(self, input_channels = 3, output_channels = 10 ) -> object:
-        super(ResNet, self).__init__()
+        super(My_ResNet, self).__init__()
         self.block1= Layer_block(input_channels, out_channels =15, kernel_size = 7,stride =  2)
         self.block2 = Layer_block(15, 30, kernel_size = 3, stride = 2)
         self.block3 = Layer_block(30, 60, kernel_size = 3, stride = 2)
@@ -43,8 +44,14 @@ class ResNet(nn.Module):
         x = F.relu( x)
         x = self.fc3(x)
         return x
-    
+
+
+writer = SummaryWriter('logs_tensorboard/211021')
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = ResNet().to(device)
-summary(model, (3, 256, 256))
+img_tensor = torch.rand(6, 3, 256, 256).to(device)
+writer.add_images("test", img_tensor, global_step=None, walltime=None, dataformats='NCHW')
+writer.close()
+hhhh = My_ResNet().to(device)
+
+pass
     
