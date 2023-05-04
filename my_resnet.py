@@ -45,13 +45,14 @@ class My_ResNet(nn.Module):
         x = self.fc3(x)
         return x
 
-
-writer = SummaryWriter('logs_tensorboard/211021')
+input = torch.rand(13, 3, 256 ,256) #假设输入13张1*28*28的图片
+model = My_ResNet()
+with SummaryWriter("network_visualization") as w:
+    w.add_graph(model, input)
+""" writer = SummaryWriter('logs_tensorboard/211021')
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 img_tensor = torch.rand(6, 3, 256, 256).to(device)
-writer.add_images("test", img_tensor, global_step=None, walltime=None, dataformats='NCHW')
-writer.close()
-hhhh = My_ResNet().to(device)
-
+writer.add_graph(My_ResNet().to(device), img_tensor)
+writer.close() """
 pass
     
