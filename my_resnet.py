@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchsummary import summary
 from torch.utils.tensorboard import SummaryWriter
 
 class Layer_block(nn.Module):
@@ -45,14 +44,9 @@ class My_ResNet(nn.Module):
         x = self.fc3(x)
         return x
 
-input = torch.rand(13, 3, 256 ,256) #假设输入13张1*28*28的图片
+input = torch.rand(13, 3, 256 ,256)
 model = My_ResNet()
-with SummaryWriter("network_visualization") as w:
+with SummaryWriter("resnet/network_visualization") as w:
     w.add_graph(model, input)
-""" writer = SummaryWriter('logs_tensorboard/211021')
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-img_tensor = torch.rand(6, 3, 256, 256).to(device)
-writer.add_graph(My_ResNet().to(device), img_tensor)
-writer.close() """
 pass
     
